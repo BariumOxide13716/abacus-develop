@@ -79,6 +79,8 @@ class XC_Functional
 
 	//exx_hybrid_alpha for mixing exx in hybrid functional:
 	static double hybrid_alpha;
+    static double dens_threshold, zeta_threshold, grho_threshold, tau_threshold;
+    static double default_dft_threshold;
 
 	public:
 	static std::vector<int> get_func_id() { return func_id; }

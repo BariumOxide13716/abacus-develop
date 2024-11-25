@@ -18,6 +18,37 @@ std::vector<int> XC_Functional::func_id(1);
 int XC_Functional::func_type = 0;
 bool XC_Functional::use_libxc = true;
 double XC_Functional::hybrid_alpha = 0.25;
+double static XC_Functional::default_dft_threshold=1.0e-10;
+
+void XC_Functional::set_dft_ingred_thrs(const double d_thr=default_dft_threshold,
+                                        const double z_thr=default_dft_threshold,
+                                        const double g_thr=default_dft_threshold,
+                                        const double t_thr=default_dft_threshold)
+{  dens_threshold = d_thr;
+   zeta_threshold = z_thr;
+   grho_threshold = g_thr;
+   tau_threshold = t_thr;
+}
+
+double XC_Functional::get_dens_threshold()
+{
+    return dens_threshold;
+}
+
+double XC_Functional::get_grho_threshold()
+{
+    return grho_threshold;
+}
+
+double XC_Functional::get_zeta_threshold()
+{
+    return zeta_threshold;
+}
+
+double XC_Functional::get_tau_threshold()
+{
+    return tau_threshold;
+}
 
 void XC_Functional::set_hybrid_alpha(const double alpha_in)
 {
@@ -27,6 +58,11 @@ void XC_Functional::set_hybrid_alpha(const double alpha_in)
 double XC_Functional::get_hybrid_alpha()
 {
     return hybrid_alpha;
+}
+
+void XC_Functional::set_hybrid_alpha(const double alpha_in)
+{
+    hybrid_alpha = alpha_in;
 }
 
 int XC_Functional::get_func_type()
@@ -39,6 +75,7 @@ void XC_Functional::set_xc_first_loop(const UnitCell& ucell)
 the first scf iteration only calculate the functional without exact
 exchange. but in "nscf" calculation, there is no need of "two-level"
 method. */
+    XC_Functional::set_dft_ingred_thrs();
     if (ucell.atoms[0].ncpp.xc_func == "HF"
         || ucell.atoms[0].ncpp.xc_func == "PBE0"
         || ucell.atoms[0].ncpp.xc_func == "HSE") {
