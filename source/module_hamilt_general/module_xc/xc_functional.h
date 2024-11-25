@@ -65,6 +65,12 @@ class XC_Functional
 	static int get_func_type();
     static void set_xc_type(const std::string xc_func_in);
 
+    static void set_dft_ingred_thrs(double d_thr, double z_thr, double g_thr, double t_thr);
+    static double get_dens_threshold();
+    static double get_grho_threshold();
+    static double get_zeta_threshold();
+    static double get_tau_threshold();
+
     // For hybrid functional
     static void set_hybrid_alpha(const double alpha_in);
     static double get_hybrid_alpha();
@@ -77,10 +83,14 @@ class XC_Functional
 	static int func_type; //0:none, 1:lda, 2:gga, 3:mgga, 4:hybrid lda/gga, 5:hybrid mgga
 	static bool use_libxc;
 
+
+        static double dens_threshold;
+        static double grho_threshold;
+        static double zeta_threshold;
+        static double tau_threshold;
+        static double default_dft_threshold;
 	//exx_hybrid_alpha for mixing exx in hybrid functional:
 	static double hybrid_alpha;
-    static double dens_threshold, zeta_threshold, grho_threshold, tau_threshold;
-    static double default_dft_threshold;
 
 	public:
 	static std::vector<int> get_func_id() { return func_id; }
