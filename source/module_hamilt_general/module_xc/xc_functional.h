@@ -65,7 +65,7 @@ class XC_Functional
 	static int get_func_type();
     static void set_xc_type(const std::string xc_func_in);
 
-    static void set_dft_ingred_thrs(double d_thr, double z_thr, double g_thr, double t_thr);
+    static void set_xc_ingred_thrs(double _thr_in);
     static double get_dens_threshold();
     static double get_grho_threshold();
     static double get_zeta_threshold();
@@ -88,7 +88,6 @@ class XC_Functional
         static double grho_threshold;
         static double zeta_threshold;
         static double tau_threshold;
-        static double default_dft_threshold;
 	//exx_hybrid_alpha for mixing exx in hybrid functional:
 	static double hybrid_alpha;
 

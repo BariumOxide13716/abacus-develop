@@ -268,7 +268,7 @@ ModuleBase::matrix XC_Functional_Libxc::convert_v_nspin4(
 	const ModuleBase::matrix &v)
 {
 	assert(PARAM.inp.nspin==4);
-	constexpr double vanishing_charge = 1.0e-10;
+	const double vanishing_charge = XC_Functional::get_dens_threshold();
 	ModuleBase::matrix v_nspin4(PARAM.inp.nspin, nrxx);
 	for( int ir=0; ir<nrxx; ++ir )
 		v_nspin4(0,ir) = 0.5 * (v(0,ir)+v(1,ir));

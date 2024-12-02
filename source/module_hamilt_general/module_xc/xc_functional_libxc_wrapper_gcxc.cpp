@@ -1,6 +1,7 @@
 #ifdef USE_LIBXC
 
 #include "xc_functional_libxc.h"
+#include "xc_functional.h"
 
 #include <xc.h>
 #include <array>
@@ -12,9 +13,12 @@ void XC_Functional_Libxc::gcxc_libxc(
 {
     sxc = v1xc = v2xc = 0.0;
 
-    constexpr double small = 1.e-6;
-    constexpr double smallg = 1.e-10;
-    if (rho <= small || grho < smallg)
+//    constexpr double small = 1.e-6;
+//    constexpr double smallg = 1.e-10;
+
+//    std::cout << "hello from XC_Functional_Libxc, threshold = " << XC_Functional::get_dens_threshold() << std::endl;
+
+    if (rho <= XC_Functional::get_dens_threshold() || grho < XC_Functional::get_grho_threshold())
     {
         return;
     }
@@ -49,8 +53,9 @@ void XC_Functional_Libxc::gcxc_spin_libxc(
     {
         if( func.info->family == XC_FAMILY_GGA || func.info->family == XC_FAMILY_HYB_GGA)
         {
-            constexpr double rho_threshold = 1E-6;
-            constexpr double grho_threshold = 1E-10;
+//            std::cout << "hello libxc gcxc_spin_libxc, threshold: " << XC_Functional::get_dens_threshold() << std::endl;
+            const double rho_threshold = XC_Functional::get_dens_threshold();
+            const double grho_threshold = XC_Functional::get_grho_threshold();
             std::array<double,2> sgn = {1.0, 1.0};
             if(func.info->kind==XC_CORRELATION)
             {

@@ -189,6 +189,11 @@ void ESolver_KS<T, Device>::before_all_runners(UnitCell& ucell, const Input_para
     //! 4) it has been established that
     // xc_func is same for all elements, therefore
     // only the first one if used
+
+    // A little hacking of the code here. Adding the
+    // following line to set up the density threshold
+    // for DFT calculations.
+    XC_Functional::set_xc_ingred_thrs(PARAM.inp.xc_dens_thr);
     if (PARAM.inp.use_paw)
     {
         XC_Functional::set_xc_type(PARAM.inp.dft_functional);

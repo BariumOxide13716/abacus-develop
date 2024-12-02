@@ -40,12 +40,10 @@ void XC_Functional::gcxc(const double &rho, const double &grho, double &sxc,
     // USE kinds
     // implicit none
     // real rho, grho, sx, sc, v1x, v2x, v1c, v2c;
-    const double small = 1.e-6;
-    const double smallg = 1.e-10;
     double s,v1,v2;
     sxc = v1xc = v2xc = 0.0;
-
-    if (rho <= small || grho < smallg)
+    std::cout << "threshold for densities " << dens_threshold << " " << rho << " " << grho<< std::endl;
+    if (rho <= dens_threshold || grho < grho_threshold)
     {
         return;
     }
@@ -127,7 +125,7 @@ void XC_Functional::gcx_spin(double rhoup, double rhodw, double grhoup2, double 
     // derivatives of exchange wr. grho
 
     // parameter :
-    double small = 1.e-10;
+    double small = dens_threshold;
     double sxup, sxdw;
     int iflag;
 
@@ -138,6 +136,7 @@ void XC_Functional::gcx_spin(double rhoup, double rhodw, double grhoup2, double 
     v1xup = 0.00; v2xup = 0.00;
     v1xdw = 0.00; v2xdw = 0.00;
     sxup  = 0.00; sxdw  = 0.00;
+
 
     if (rho <= small)
     {
@@ -245,14 +244,17 @@ void XC_Functional::gcc_spin(double rho, double &zeta, double grho, double &sc,
     // derivatives of correlation wr. grho
 
     // parameter :
-    double small = 1.0e-10;
-	double epsr = 1.0e-6;
+    double small = dens_threshold;
+    double epsr = zeta_threshold;
 
     double x;
 
     sc = 0.00;
     v1cup = 0.00; v1cdw = 0.00;
     v2c = 0.00;
+
+//    std::cout << "hello from gcc_spin, threshold = " << dens_threshold << " " << grho_threshold << std::endl;
+
     if (std::abs(zeta) - 1.0 > small || rho <= small || sqrt(std::abs(grho)) <= small)
     {
         return;

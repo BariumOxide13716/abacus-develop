@@ -76,11 +76,13 @@ std::tuple<double,double,ModuleBase::matrix> XC_Functional_Libxc::v_xc_libxc(		/
     double vtxc = 0.0;
     ModuleBase::matrix v(nspin,nrxx);
 
+//    std::cout<< "hello from v_xc_libxc, threshold = " << XC_Functional::get_dens_threshold() << " " << XC_Functional::get_grho_threshold()<< std::endl; 
+
     for( xc_func_type &func : funcs )
     {
         // jiyy add for threshold
-        constexpr double rho_threshold = 1E-6;
-        constexpr double grho_threshold = 1E-10;
+        const double rho_threshold = XC_Functional::get_dens_threshold();
+        const double grho_threshold = XC_Functional::get_grho_threshold();
 
         xc_func_set_dens_threshold(&func, rho_threshold);
 
@@ -207,9 +209,9 @@ std::tuple<double,double,ModuleBase::matrix,ModuleBase::matrix> XC_Functional_Li
     std::vector<double> vtau   ( nrxx * nspin            );
     std::vector<double> vlapl  ( nrxx * nspin            );
 
-    constexpr double rho_th  = 1e-8;
-    constexpr double grho_th = 1e-12;
-    constexpr double tau_th  = 1e-8;
+    const double rho_th  = XC_Functional::get_dens_threshold();
+    const double grho_th = XC_Functional::get_grho_threshold();
+    const double tau_th  = XC_Functional::get_tau_threshold();
     // sgn for threshold mask
     std::vector<double> sgn( nrxx * nspin);
 #ifdef _OPENMP

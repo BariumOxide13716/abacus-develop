@@ -19,7 +19,6 @@ void PotXC::cal_v_eff(const Charge*const chg, const UnitCell*const ucell, Module
     //----------------------------------------------------------
     //  calculate the exchange-correlation potential
     //----------------------------------------------------------
-
     if (XC_Functional::get_func_type() == 3 || XC_Functional::get_func_type() == 5)
     {
 #ifdef USE_LIBXC

@@ -14,21 +14,27 @@ XC_Functional::XC_Functional(){}
 
 XC_Functional::~XC_Functional(){}
 
+//double XC_Functional::dens_threshold;
+//double XC_Functional::zeta_threshold;
+//double XC_Functional::grho_threshold;
+//double XC_Functional::tau_threshold;
+
+double XC_Functional::dens_threshold = 1.0e-10;
+double XC_Functional::zeta_threshold = dens_threshold;
+double XC_Functional::grho_threshold = dens_threshold;
+double XC_Functional::tau_threshold = dens_threshold;
+
 std::vector<int> XC_Functional::func_id(1);
 int XC_Functional::func_type = 0;
 bool XC_Functional::use_libxc = true;
 double XC_Functional::hybrid_alpha = 0.25;
-double XC_Functional::default_dft_threshold=1.0e-10;
-double XC_Functional::dens_threshold=1.0e-10;
-double XC_Functional::zeta_threshold=1.0e-10;
-double XC_Functional::grho_threshold=1.0e-10;
-double XC_Functional::tau_threshold=1.0e-10;
 
-void XC_Functional::set_dft_ingred_thrs(double d_thr, double z_thr, double g_thr, double t_thr)
-{  dens_threshold = d_thr;
-   zeta_threshold = z_thr;
-   grho_threshold = g_thr;
-   tau_threshold = t_thr;
+void XC_Functional::set_xc_ingred_thrs(double _thr_in)
+{
+    XC_Functional::dens_threshold = _thr_in;
+    XC_Functional::zeta_threshold = dens_threshold;
+    XC_Functional::grho_threshold = dens_threshold*1.0e-4;
+    XC_Functional::tau_threshold = dens_threshold*1.0e-4;
 }
 
 double XC_Functional::get_dens_threshold()

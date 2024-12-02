@@ -191,8 +191,8 @@ void XC_Functional::gradcorr(double &etxc, double &vtxc, ModuleBase::matrix &v,
 
 	}
 	
-	const double epsr = 1.0e-6;
-	const double epsg = 1.0e-10;
+	const double epsr = dens_threshold;
+	const double epsg = grho_threshold;
 
 	double vtxcgc = 0.0;
 	double etxcgc = 0.0;
