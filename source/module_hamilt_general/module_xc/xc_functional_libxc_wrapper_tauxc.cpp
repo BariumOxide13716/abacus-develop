@@ -73,10 +73,12 @@ void XC_Functional_Libxc::tau_xc_spin(
             std::array<double,2> sgn = {1.0, 1.0};
             if(func.info->kind==XC_CORRELATION)
             {
-                if ( rho[0]<rho_threshold || sqrt(std::abs(grho[0]))<grho_threshold )
+                if ( rho[0]<rho_threshold || sqrt(std::abs(grho[0]))<grho_threshold ) {
                     sgn[0] = 0.0;
-                if ( rho[1]<rho_threshold || sqrt(std::abs(grho[2]))<grho_threshold )
+}
+                if ( rho[1]<rho_threshold || sqrt(std::abs(grho[2]))<grho_threshold ) {
                     sgn[1] = 0.0;
+}
             }
 
             double s = 0.0;
