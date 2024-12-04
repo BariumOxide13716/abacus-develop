@@ -40,7 +40,7 @@ std::tuple<double,double,ModuleBase::matrix> XC_Functional::v_xc(
     // in Rydeberg unit, so * 2.0.
     double e2 = 2.0;
 
-    double vanishing_charge = dens_threshold;
+    double vanishing_charge = rho_thr;
 
     if (PARAM.inp.nspin == 1 || ( PARAM.inp.nspin ==4 && !PARAM.globalv.domag && !PARAM.globalv.domag_z))
     {

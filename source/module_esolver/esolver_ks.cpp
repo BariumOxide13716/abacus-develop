@@ -193,7 +193,10 @@ void ESolver_KS<T, Device>::before_all_runners(UnitCell& ucell, const Input_para
     // A little hacking of the code here. Adding the
     // following line to set up the density threshold
     // for DFT calculations.
-    XC_Functional::set_xc_ingred_thrs(PARAM.inp.xc_dens_thr);
+    XC_Functional::set_xc_ingred_thrs(PARAM.inp.xc_rho_thr,
+                                      PARAM.inp.xc_zeta_thr,
+                                      PARAM.inp.xc_grho_thr,
+                                      PARAM.inp.xc_tau_thr);
     if (PARAM.inp.use_paw)
     {
         XC_Functional::set_xc_type(PARAM.inp.dft_functional);

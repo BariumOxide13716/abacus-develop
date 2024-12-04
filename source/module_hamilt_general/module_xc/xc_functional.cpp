@@ -14,47 +14,47 @@ XC_Functional::XC_Functional(){}
 
 XC_Functional::~XC_Functional(){}
 
-//double XC_Functional::dens_threshold;
-//double XC_Functional::zeta_threshold;
-//double XC_Functional::grho_threshold;
-//double XC_Functional::tau_threshold;
+double XC_Functional::rho_thr;
+double XC_Functional::zeta_thr;
+double XC_Functional::grho_thr;
+double XC_Functional::tau_thr;
 
-double XC_Functional::dens_threshold = 1.0e-10;
-double XC_Functional::zeta_threshold = dens_threshold;
-double XC_Functional::grho_threshold = dens_threshold;
-double XC_Functional::tau_threshold = dens_threshold;
+//double XC_Functional::rho_thr = 1.0e-10;
+//double XC_Functional::zeta_thr = rho_thr;
+//double XC_Functional::grho_thr = rho_thr;
+//double XC_Functional::tau_thr = rho_thr;
 
 std::vector<int> XC_Functional::func_id(1);
 int XC_Functional::func_type = 0;
 bool XC_Functional::use_libxc = true;
 double XC_Functional::hybrid_alpha = 0.25;
 
-void XC_Functional::set_xc_ingred_thrs(double _thr_in)
+void XC_Functional::set_xc_ingred_thrs(double thr_rho, double thr_zeta, double thr_grho, double thr_tau)
 {
-    XC_Functional::dens_threshold = _thr_in;
-    XC_Functional::zeta_threshold = dens_threshold;
-    XC_Functional::grho_threshold = dens_threshold*1.0e-4;
-    XC_Functional::tau_threshold = dens_threshold*1.0e-4;
+    XC_Functional::rho_thr = thr_rho;
+    XC_Functional::zeta_thr = thr_zeta;
+    XC_Functional::grho_thr = thr_grho;
+    XC_Functional::tau_thr = thr_tau;
 }
 
-double XC_Functional::get_dens_threshold()
+double XC_Functional::get_rho_thr()
 {
-    return dens_threshold;
+    return rho_thr;
 }
 
-double XC_Functional::get_grho_threshold()
+double XC_Functional::get_grho_thr()
 {
-    return grho_threshold;
+    return grho_thr;
 }
 
-double XC_Functional::get_zeta_threshold()
+double XC_Functional::get_zeta_thr()
 {
-    return zeta_threshold;
+    return zeta_thr;
 }
 
-double XC_Functional::get_tau_threshold()
+double XC_Functional::get_tau_thr()
 {
-    return tau_threshold;
+    return tau_thr;
 }
 
 double XC_Functional::get_hybrid_alpha()

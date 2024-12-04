@@ -112,7 +112,10 @@ struct Input_para
     bool gamma_only = false;   ///< for plane wave.
     int scf_nmax = 100;        ///< number of max elec iter
     double scf_thr = -1.0;     ///< \sum |rhog_out - rhog_in |^2
-    double xc_dens_thr = 1.0e-10; ///< threshold for density and other DFT ingredients to toss away in DFT calculation.
+    double xc_rho_thr = 1.0e-10;  ///< threshold for density in DFT calculations
+    double xc_grho_thr = 1.0e-14; ///< threshold for density gradient in DFT calculations
+    double xc_zeta_thr = 1.0e-4; ///< threshold for zeta in DFT calculations
+    double xc_tau_thr = 1.0e-14;  ///< threshold for kinetic energy density in DFT calculations
     double scf_ene_thr = -1.0; ///< energy threshold for scf convergence, in eV
     int scf_thr_type = -1;     ///< type of the criterion of scf_thr, 1: reci drho, 2: real drho
     bool final_scf = false;    ///< whether to do final scf

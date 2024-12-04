@@ -68,8 +68,8 @@ void XC_Functional_Libxc::tau_xc_spin(
     {
         if( func.info->family == XC_FAMILY_MGGA || func.info->family == XC_FAMILY_HYB_MGGA)
         {
-            const double rho_threshold = XC_Functional::get_dens_threshold();
-            const double grho_threshold = XC_Functional::get_grho_threshold();
+            const double rho_threshold = XC_Functional::get_rho_thr();
+            const double grho_threshold = XC_Functional::get_grho_thr();
             std::array<double,2> sgn = {1.0, 1.0};
             if(func.info->kind==XC_CORRELATION)
             {

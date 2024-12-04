@@ -542,15 +542,50 @@ void ReadInput::item_elec_stru()
         this->add_item(item);
     }
     {
-        Input_Item item("xc_dens_thr");
-        item.annotation = "threshold for density and other dft functional ingredients";
-        read_sync_double(input.xc_dens_thr);
+        Input_Item item("xc_rho_thr");
+        item.annotation = "threshold for density (rho) in dft functional calculations";
+        read_sync_double(input.xc_rho_thr);
         item.check_value = [] (const Input_Item& item, const Parameter& para){
-            if (para.input.xc_dens_thr <= 0.0)
+            if (para.input.xc_rho_thr <= 0.0)
             {
-                ModuleBase::WARNING_QUIT("ReadInput", "xc_dens_thr should be positive");
+                ModuleBase::WARNING_QUIT("ReadInput", "xc_rho_thr should be positive");
             }
-        std::cout<< "resetting xc_dens_thr " << para.input.xc_dens_thr<< std::endl;
+        };
+        this->add_item(item);
+    }
+    {
+        Input_Item item("xc_zeta_thr");
+        item.annotation = "threshold for zeta in dft functional calculations";
+        read_sync_double(input.xc_zeta_thr);
+        item.check_value = [] (const Input_Item& item, const Parameter& para){
+            if (para.input.xc_zeta_thr <= 0.0)
+            {
+                ModuleBase::WARNING_QUIT("ReadInput", "xc_zeta_thr should be positive");
+            }
+        };
+        this->add_item(item);
+    }
+    {
+        Input_Item item("xc_grho_thr");
+        item.annotation = "threshold for density (grho) gradient in dft functional calculations";
+        read_sync_double(input.xc_grho_thr);
+        item.check_value = [] (const Input_Item& item, const Parameter& para){
+            if (para.input.xc_grho_thr <= 0.0)
+            {
+                ModuleBase::WARNING_QUIT("ReadInput", "xc_grho_thr should be positive");
+            }
+        };
+        this->add_item(item);
+    }
+    {
+        Input_Item item("xc_tau_thr");
+        item.annotation = "threshold for kinetic energy density (tau) in dft functional calculations";
+        read_sync_double(input.xc_tau_thr);
+        item.check_value = [] (const Input_Item& item, const Parameter& para){
+            if (para.input.xc_tau_thr <= 0.0)
+            {
+                ModuleBase::WARNING_QUIT("ReadInput", "xc_tau_thr should be positive");
+            }
         };
         this->add_item(item);
     }
