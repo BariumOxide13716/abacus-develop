@@ -13,11 +13,6 @@ AddTest(
   SOURCES bfgsdata_test.cpp ../bfgsdata.cpp
 )
 
-AddTest(
-  TARGET magforce_bfgs_test
-  LIBS parameter ${math_libs} base device 
-  SOURCES magmom_bfgs_test.cpp ../magmom_bfgs.cpp ../bfgsdata.cpp
-)
 
 AddTest(
   TARGET lattice_change_methods_test

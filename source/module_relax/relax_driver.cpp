@@ -9,17 +9,24 @@
 #include "module_io/read_exit_file.h"
 #include "module_io/write_wfc_r.h"
 #include "module_parameter/parameter.h"
+#include "relax_old/magmom_bfgs_opt.h"
 void Relax_Driver::relax_driver(ModuleESolver::ESolver* p_esolver, UnitCell& ucell)
 {
     ModuleBase::TITLE("Ions", "opt_ions");
     ModuleBase::timer::tick("Ions", "opt_ions");
 
+    std::cout << "     hello from Relax_Driver" << std::endl;
+
     if (PARAM.inp.calculation == "relax" || PARAM.inp.calculation == "cell-relax" )
     {
-//        if (PARAM.inp.sc_mag_switch)
-//        {
-//            magmom_bfgs_optimizer.initialize(ucell.nat, 3);
-//        }
+        std::cout << "performing relax or cell-relax" << std::endl;
+        if (PARAM.inp.sc_mag_switch)
+        {
+            std::cout << std::endl;
+            std::cout << "      will perform magnetic-moment optimization" << std::endl;
+            std::cout << std::endl;
+            magmom_bfgs_optimizer.initialize(ucell.nat, 3);
+        }
         if (!PARAM.inp.relax_new)
         {
             rl_old.init_relax(ucell.nat);
@@ -80,10 +87,14 @@ void Relax_Driver::relax_driver(ModuleESolver::ESolver* p_esolver, UnitCell& uce
 
         if (PARAM.inp.calculation == "relax" || PARAM.inp.calculation == "cell-relax")
         {
-//            if (PARAM.inp.sc_mag_switch)  //always relax magnetic moment if doing relax/cell-relax with nspin=4
-//            {
-//                stop = magmom_bfgs_optimizer.bfgs_wrapper();
-//            }
+            std::cout << std::endl;
+            std::cout << " will do BFGS for magnetic moment" << std::endl;
+            std::cout << std::endl;
+            if (PARAM.inp.sc_mag_switch)  //always relax magnetic moment if doing relax/cell-relax with nspin=4
+            {
+                std::cout << "will enter the bfgs_wrapper" << std::endl;
+                stop = magmom_bfgs_optimizer.bfgs_wrapper();
+            }
             if (PARAM.inp.relax_new)
             {
                 stop = rl.relax_step(ucell, force, stress, this->etot);
