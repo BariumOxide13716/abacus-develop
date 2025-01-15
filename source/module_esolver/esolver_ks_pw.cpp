@@ -383,6 +383,7 @@ void ESolver_KS_PW<T, Device>::before_scf(UnitCell& ucell, const int istep)
     {
         spinconstrain::SpinConstrain<std::complex<double>>& sc
             = spinconstrain::SpinConstrain<std::complex<double>>::getScInstance();
+        std::cout << "hello before init_sc from esolve_ks_pw" << std::endl; 
         sc.init_sc(PARAM.inp.sc_thr,
                    PARAM.inp.nsc,
                    PARAM.inp.nsc_min,

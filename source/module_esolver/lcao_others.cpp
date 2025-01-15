@@ -229,6 +229,7 @@ void ESolver_KS_LCAO<TK, TR>::others(UnitCell& ucell, const int istep)
 #endif
     if (PARAM.inp.sc_mag_switch)
     {
+        std::cout << "hello before init_sc in lcao_others" << std::endl;
         spinconstrain::SpinConstrain<TK>& sc = spinconstrain::SpinConstrain<TK>::getScInstance();
         sc.init_sc(PARAM.inp.sc_thr,
                    PARAM.inp.nsc,
