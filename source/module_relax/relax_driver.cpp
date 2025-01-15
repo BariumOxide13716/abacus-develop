@@ -16,6 +16,10 @@ void Relax_Driver::relax_driver(ModuleESolver::ESolver* p_esolver, UnitCell& uce
 
     if (PARAM.inp.calculation == "relax" || PARAM.inp.calculation == "cell-relax" )
     {
+//        if (PARAM.inp.sc_mag_switch)
+//        {
+//            magmom_bfgs_optimizer.initialize(ucell.nat, 3);
+//        }
         if (!PARAM.inp.relax_new)
         {
             rl_old.init_relax(ucell.nat);
@@ -76,6 +80,10 @@ void Relax_Driver::relax_driver(ModuleESolver::ESolver* p_esolver, UnitCell& uce
 
         if (PARAM.inp.calculation == "relax" || PARAM.inp.calculation == "cell-relax")
         {
+//            if (PARAM.inp.sc_mag_switch)  //always relax magnetic moment if doing relax/cell-relax with nspin=4
+//            {
+//                stop = magmom_bfgs_optimizer.bfgs_wrapper();
+//            }
             if (PARAM.inp.relax_new)
             {
                 stop = rl.relax_step(ucell, force, stress, this->etot);

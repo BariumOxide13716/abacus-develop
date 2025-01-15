@@ -7,6 +7,7 @@
 #include "relax_new/relax.h"
 #include "relax_old/relax_old.h"
 #include "relax_old/bfgs.h"
+//#include "relax_old/magmom_bfgs.cpp"
 class Relax_Driver
 {
 
@@ -30,6 +31,7 @@ class Relax_Driver
 
     BFGS bfgs_trad;
 
+//    Magmom_BFGS magmom_bfgs_optimizer;
 
 };
 
