@@ -41,8 +41,10 @@ void Relax_Driver::relax_driver(ModuleESolver::ESolver* p_esolver, UnitCell& uce
     int force_step = 1; // pengfei Li 2018-05-14
     int stress_step = 1;
     bool stop = false;
+    bool mag_stop = true;
+    if (PARAM.inp.sc_mag_switch) { mag_stop = false; }
 
-    while (istep <= PARAM.inp.relax_nmax && !stop)
+    while (istep <= PARAM.inp.relax_nmax && !(stop && mag_stop))
     {
         time_t estart = time(nullptr);
 
@@ -93,7 +95,7 @@ void Relax_Driver::relax_driver(ModuleESolver::ESolver* p_esolver, UnitCell& uce
             if (PARAM.inp.sc_mag_switch)  //always relax magnetic moment if doing relax/cell-relax with nspin=4
             {
                 std::cout << "will enter the bfgs_wrapper" << std::endl;
-                stop = magmom_bfgs_optimizer.bfgs_wrapper();
+                mag_stop = magmom_bfgs_optimizer.bfgs_wrapper();
             }
             if (PARAM.inp.relax_new)
             {
