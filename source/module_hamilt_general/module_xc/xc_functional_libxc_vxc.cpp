@@ -23,7 +23,7 @@ std::tuple<double,double,ModuleBase::matrix> XC_Functional_Libxc::v_xc_libxc(		/
 {
     ModuleBase::TITLE("XC_Functional_Libxc","v_xc_libxc");
     ModuleBase::timer::tick("XC_Functional_Libxc","v_xc_libxc");
-
+    std::cout << "do I reach v_xc_libxc?" << std::endl;
     const int nspin =
         (PARAM.inp.nspin == 1 || ( PARAM.inp.nspin ==4 && !PARAM.globalv.domag && !PARAM.globalv.domag_z))
         ? 1 : 2;
@@ -178,6 +178,18 @@ std::tuple<double,double,ModuleBase::matrix,ModuleBase::matrix> XC_Functional_Li
     ModuleBase::TITLE("XC_Functional_Libxc","v_xc_meta");
     ModuleBase::timer::tick("XC_Functional_Libxc","v_xc_meta");
 
+
+    std::cout << " hello from XC_Functional_Libxc::v_xc_meta " << std::endl;
+    int n_neg_dens_a = 0;
+    int n_neg_dens_b = 0;
+    int n_neg_tau_a = 0;
+    int n_neg_tau_b = 0;
+    int n_discard_a = 0;
+    int n_discard_b = 0;
+
+    int n_neg_dens = 0;
+    int n_zero_sigma = 0;
+    int n_neg_tau = 0;
     double e2 = 2.0;
 
     //output of the subroutine
@@ -243,11 +255,28 @@ std::tuple<double,double,ModuleBase::matrix,ModuleBase::matrix> XC_Functional_Li
 #endif
         for( int ir=0; ir<nrxx; ++ir )
         {
-            if ( rho[ir]<rho_th || sqrt(std::abs(sigma[ir]))<grho_th || std::abs(kin_r[ir])<tau_th)
+            if ( rho[ir]<0 ){
+                n_neg_dens += 1;
+            }
+            if ( sqrt(std::abs(sigma[ir]))<grho_th ){
+                n_zero_sigma += 1;
+            }
+            if ( kin_r[ir]<tau_th){
+                n_neg_tau += 1;
+            }
+
+            //if ( rho[ir]<rho_th || sqrt(std::abs(sigma[ir]))<grho_th || std::abs(kin_r[ir])<tau_th)
+            if ( rho[ir]<0 || sqrt(std::abs(sigma[ir]))<grho_th || kin_r[ir]<tau_th)
             {
                 sgn[ir] = 0.0;
             }
         }
+        std::cout << "number of negative density points:   "
+                  << n_neg_dens << "/" << nrxx << std::endl; 
+        std::cout << "number of zero sigma points:         "
+                  << n_zero_sigma << "/" << nrxx << std::endl; 
+        std::cout << "number of negative tau points:       "
+                  << n_neg_tau << "/" << nrxx << std::endl; 
     }
     else
     {
@@ -256,13 +285,38 @@ std::tuple<double,double,ModuleBase::matrix,ModuleBase::matrix> XC_Functional_Li
 #endif
         for( int ir=0; ir<nrxx; ++ir )
         {
+            if ( rho[ir*2] < 0.0  ){
+                n_neg_dens_a += 1;
+            }
+            if ( rho[ir*2+1] < 0.0  ){
+                n_neg_dens_b += 1;
+            }
+            if ( kin_r[ir*2] < 0.0  ){
+                n_neg_tau_a += 1;
+            }
+            if ( kin_r[ir*2+1] < 0.0  ){
+                n_neg_tau_b += 1;
+            }
             if ( rho[ir*2]<rho_th || sqrt(std::abs(sigma[ir*3]))<grho_th || std::abs(kin_r[ir*2])<tau_th) {
                 sgn[ir*2] = 0.0;
+                sgn[ir*2+1] = 0.0;
+                n_discard_a += 1;
 }
             if ( rho[ir*2+1]<rho_th || sqrt(std::abs(sigma[ir*3+2]))<grho_th || std::abs(kin_r[ir*2+1])<tau_th) {
+                sgn[ir*2] = 0.0;
                 sgn[ir*2+1] = 0.0;
+                n_discard_b += 1;
 }
         }
+        std::cout << "number of negative alpha and beta density points:         "
+                  << n_neg_dens_a << "/" << nrxx << " "
+                  << n_neg_dens_b << "/" << nrxx << std::endl; 
+        std::cout << "number of negative alpha and beta kinetic-density points: "
+                  << n_neg_tau_a << "/" << nrxx << " "
+                  << n_neg_tau_b << "/" << nrxx << std::endl; 
+        std::cout << "number of discarded alpha and beta points:                "
+                  << n_discard_a << "/" << nrxx << " "
+                  << n_discard_b << "/" << nrxx << std::endl; 
     }
 
     for ( xc_func_type &func : funcs )
@@ -287,6 +341,8 @@ std::tuple<double,double,ModuleBase::matrix,ModuleBase::matrix> XC_Functional_Li
 #endif
                 etxc += ModuleBase::e2 * exc[ir] * rho[ir*nspin+is]  * sgn[ir*nspin+is];
             }
+            std::cout << "etxc after all grid points: " << etxc << std::endl;
+
         }
 
         //process vtxc
@@ -308,6 +364,7 @@ std::tuple<double,double,ModuleBase::matrix,ModuleBase::matrix> XC_Functional_Li
                 vtxc += v_tmp * chr->rho[is][ir];
             }
         }
+        std::cout << "vtxc after all grid points: " << vtxc << std::endl;
 
         //process vsigma
         std::vector<std::vector<ModuleBase::Vector3<double>>> h(
@@ -315,6 +372,9 @@ std::tuple<double,double,ModuleBase::matrix,ModuleBase::matrix> XC_Functional_Li
             std::vector<ModuleBase::Vector3<double>>(nrxx) );
         if( 1==nspin )
         {
+            double sum_abs_h = 0.0;
+            double sum_abs_gdr = 0.0;
+            double sum_abs_vsigma = 0.0;
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static, 1024)
 #endif
@@ -327,7 +387,30 @@ std::tuple<double,double,ModuleBase::matrix,ModuleBase::matrix> XC_Functional_Li
                 }
 #endif
                 h[0][ir] = 2.0 * gdr[0][ir] * vsigma[ir] * 2.0 * sgn[ir];
+
+
+//                sum_abs_gdr += sqrt(gdr[0][ir][0]*gdr[0][ir][0] 
+//                                  + gdr[0][ir][1]*gdr[0][ir][1]
+//                                  + gdr[0][ir][2]*gdr[0][ir][2]);
+//                sum_abs_vsigma += std::abs(vsigma[ir]*sgn[ir]);
+                if (std::abs(vsigma[ir]) > 1.0e3)
+                {
+                    std::cout << rho[ir]    << " " << 
+                                 sigma[ir]  << " " << 
+                                 kin_r[ir]  << " " <<
+                                 sgn[ir]    << " " <<
+                                 exc[ir]    << " " <<
+                                 vrho[ir]   << " " <<
+                                 vsigma[ir] << " " <<
+                                 vtau[ir]   << " " << std::endl;
+                }
+//                sum_abs_h += sqrt(h[0][ir][0]*h[0][ir][0] 
+//                                + h[0][ir][1]*h[0][ir][1]
+//                                + h[0][ir][2]*h[0][ir][2]);
             }
+//            std::cout << "sum of abs(h)         after all grid points: " << sum_abs_h << std::endl;
+//            std::cout << "sum of abs(v_sig*sgn) after all grid points: " << sum_abs_vsigma << std::endl;
+//            std::cout << "sum of abs(gdr)       after all grid points: " << sum_abs_gdr << std::endl;
         }
         else
         {
@@ -359,6 +442,14 @@ std::tuple<double,double,ModuleBase::matrix,ModuleBase::matrix> XC_Functional_Li
                 dh[is].data(), chr->rhopw,
                 tpiba);
         }
+        double sum_abs_dh =0.0;
+        if (nspin == 1) {
+            for( int ir=0; ir< nrxx; ++ir ){
+                sum_abs_dh += std::abs(dh[0][ir]);
+            }
+            std::cout << "sum of abs(dh) after all grid points: " << sum_abs_dh << std::endl;
+        }
+
 
         double rvtxc = 0.0;
 #ifdef _OPENMP
