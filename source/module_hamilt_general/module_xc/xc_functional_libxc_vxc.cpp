@@ -297,12 +297,12 @@ std::tuple<double,double,ModuleBase::matrix,ModuleBase::matrix> XC_Functional_Li
             if ( kin_r[ir*2+1] < 0.0  ){
                 n_neg_tau_b += 1;
             }
-            if ( rho[ir*2]<rho_th || sqrt(std::abs(sigma[ir*3]))<grho_th || std::abs(kin_r[ir*2])<tau_th) {
+            if ( rho[ir*2]<rho_th || sqrt(std::abs(sigma[ir*3]))<grho_th || sigma[ir*3] < 0 ||kin_r[ir*2]<tau_th) {
                 sgn[ir*2] = 0.0;
                 sgn[ir*2+1] = 0.0;
                 n_discard_a += 1;
 }
-            if ( rho[ir*2+1]<rho_th || sqrt(std::abs(sigma[ir*3+2]))<grho_th || std::abs(kin_r[ir*2+1])<tau_th) {
+            if ( rho[ir*2+1]<rho_th || sqrt(std::abs(sigma[ir*3+2]))<grho_th || sigma[ir*3+2] < 0 || kin_r[ir*2+1]<tau_th) {
                 sgn[ir*2] = 0.0;
                 sgn[ir*2+1] = 0.0;
                 n_discard_b += 1;
