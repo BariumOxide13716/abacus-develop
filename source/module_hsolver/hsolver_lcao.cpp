@@ -45,6 +45,8 @@ void HSolverLCAO<T, Device>::solve(hamilt::Hamilt<T>* pHamilt,
 {
     ModuleBase::TITLE("HSolverLCAO", "solve");
     ModuleBase::timer::tick("HSolverLCAO", "solve");
+    /// print 'hello from solve'
+    std::cout << "Hello from HSolverLCAO::solve!" << std::endl;
 
     if (this->method != "pexsi")
     {
@@ -67,6 +69,7 @@ void HSolverLCAO<T, Device>::solve(hamilt::Hamilt<T>* pHamilt,
                 psi.fix_k(ik);
 
                 /// solve eigenvector and eigenvalue for H(k)
+                
                 this->hamiltSolvePsiK(pHamilt, psi, &(pes->ekb(ik, 0)));
             }
         }
@@ -76,6 +79,8 @@ void HSolverLCAO<T, Device>::solve(hamilt::Hamilt<T>* pHamilt,
                                      "This method and KPAR setting is not supported for lcao basis in ABACUS!");
         }
 
+        /// print "before calculate_weights"
+        std::cout << "Before calculate_weights in HSolverLCAO::solve!" << std::endl;
         elecstate::calculate_weights(pes->ekb,
                                      pes->wg,
                                      pes->klist,
@@ -85,7 +90,12 @@ void HSolverLCAO<T, Device>::solve(hamilt::Hamilt<T>* pHamilt,
                                      pes->skip_weights);
 
         auto _pes_lcao = dynamic_cast<elecstate::ElecStateLCAO<T>*>(pes);
+        /// print "before calEBand"
+        std::cout << "Before calEBand in HSolverLCAO::solve!" << std::endl;
+        // calculate band energy
         elecstate::calEBand(_pes_lcao->ekb, _pes_lcao->wg, _pes_lcao->f_en);
+        /// print "before cal_dm_psi"
+        std::cout << "Before cal_dm_psi in HSolverLCAO::solve!" << std::endl;
         elecstate::cal_dm_psi(_pes_lcao->DM->get_paraV_pointer(), _pes_lcao->wg, psi, *(_pes_lcao->DM));
         _pes_lcao->DM->cal_DMR();
 

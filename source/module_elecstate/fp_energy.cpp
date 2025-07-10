@@ -25,6 +25,24 @@ double fenergy::calculate_harris()
 {
     etot_harris = eband + deband_harris + (etxc - etxcc) + ewald_energy + hartree_energy + demet + descf + exx
                     + efield + gatefield + evdw + esol_el + esol_cav + edftu + edeepks_scf + escon;
+    std::cout << "details for calculating etot_harris" << std::endl;
+    std::cout << " eband=" << eband << std::endl;
+    std::cout << " deband_harris=" << deband_harris << std::endl;
+    std::cout << " etxc-etxcc=" << etxc - etxcc << std::endl;
+    std::cout << " ewld=" << ewald_energy << std::endl;
+    std::cout << " ehart=" << hartree_energy << std::endl;
+    std::cout << " entropy(-TS)=" << demet << std::endl;
+    std::cout << " descf=" << descf << std::endl;
+    std::cout << " exx=" << exx << std::endl;
+    std::cout << " efiled=" << efield << std::endl;
+    std::cout << " gatefiled=" << gatefield << std::endl;
+    std::cout << " evdw=" << evdw << std::endl;
+    std::cout << " esol_el=" << esol_el << std::endl;
+    std::cout << " esol_cav=" << esol_cav << std::endl;
+    std::cout << " edftu=" << edftu << std::endl;
+    std::cout << " edeepks_scf=" << edeepks_scf << std::endl;
+    std::cout << " escon=" << escon << std::endl;
+    std::cout << " etot_harris=" << etot_harris << std::endl;
     return etot_harris;
 }
 

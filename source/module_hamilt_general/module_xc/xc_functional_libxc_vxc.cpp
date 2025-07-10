@@ -10,6 +10,7 @@
 #include "module_base/tool_title.h"
 
 #include <xc.h>
+#include <list>
 
 #include <vector>
 
@@ -186,11 +187,29 @@ std::tuple<double,double,ModuleBase::matrix,ModuleBase::matrix> XC_Functional_Li
     int n_neg_tau_b = 0;
     int n_discard_a = 0;
     int n_discard_b = 0;
-
+    int i_reach_2 = 0;
+    int i_reach_3 = 0;
     int n_neg_dens = 0;
     int n_zero_sigma = 0;
     int n_neg_tau = 0;
+    int n_grid_print = 6;
     double e2 = 2.0;
+
+        /// use the max_discard_rhoa, max_discard_rhob, ir_max_discard_rhoa, ir_max_discard_rhob
+        /// to store the maximum discarded alpha and beta density points.
+        /// Do similar things for sigma_aa, sigma_bb, tau_a and tau_b.
+        double max_discard_rhoa = 0;
+        double max_discard_rhob = 0;
+        int ir_max_discard_rhoa = 0;
+        int ir_max_discard_rhob = 0;
+        double max_discard_sigma_aa = 0;
+        double max_discard_sigma_bb = 0;
+        int ir_max_discard_sigma_aa = 0;
+        int ir_max_discard_sigma_bb = 0;
+        double max_discard_tau_a = 0;
+        double max_discard_tau_b = 0;
+        int ir_max_discard_tau_a = 0;
+        int ir_max_discard_tau_b = 0;
 
     //output of the subroutine
     double etxc = 0.0;
@@ -235,9 +254,9 @@ std::tuple<double,double,ModuleBase::matrix,ModuleBase::matrix> XC_Functional_Li
     std::vector<double> vtau   ( nrxx * nspin            );
     std::vector<double> vlapl  ( nrxx * nspin            );
 
-    constexpr double rho_th  = 1e-8;
-    constexpr double grho_th = 1e-12;
-    constexpr double tau_th  = 1e-8;
+    double rho_th  = PARAM.inp.dft_thre_density; // density threshold
+    double grho_th = PARAM.inp.dft_thre_density_gradient; // gradient threshold
+    double tau_th  = PARAM.inp.dft_thre_kin_ene_density; // kinetic energy density threshold
     // sgn for threshold mask
     std::vector<double> sgn( nrxx * nspin);
 #ifdef _OPENMP
@@ -266,7 +285,7 @@ std::tuple<double,double,ModuleBase::matrix,ModuleBase::matrix> XC_Functional_Li
             }
 
             //if ( rho[ir]<rho_th || sqrt(std::abs(sigma[ir]))<grho_th || std::abs(kin_r[ir])<tau_th)
-            if ( rho[ir]<0 || sqrt(std::abs(sigma[ir]))<grho_th || kin_r[ir]<tau_th)
+            if ( rho[ir]<0 || sqrt(std::abs(sigma[ir]))<grho_th  || sigma[ir] < 0.0 || kin_r[ir]<tau_th)
             {
                 sgn[ir] = 0.0;
             }
@@ -280,9 +299,11 @@ std::tuple<double,double,ModuleBase::matrix,ModuleBase::matrix> XC_Functional_Li
     }
     else
     {
+
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static, 512)
 #endif
+
         for( int ir=0; ir<nrxx; ++ir )
         {
             if ( rho[ir*2] < 0.0  ){
@@ -297,16 +318,53 @@ std::tuple<double,double,ModuleBase::matrix,ModuleBase::matrix> XC_Functional_Li
             if ( kin_r[ir*2+1] < 0.0  ){
                 n_neg_tau_b += 1;
             }
-            if ( rho[ir*2]<rho_th || sqrt(std::abs(sigma[ir*3]))<grho_th || sigma[ir*3] < 0 ||kin_r[ir*2]<tau_th) {
+            if ( rho[ir*2]<rho_th || sqrt(std::abs(sigma[ir*3]))<grho_th || sigma[ir*3] < 0.0 || kin_r[ir*2]<tau_th) {
+            //if ( rho[ir*2]<rho_th || sqrt(std::abs(sigma[ir*3]))<grho_th || std::abs(kin_r[ir*2])<tau_th) {
                 sgn[ir*2] = 0.0;
                 sgn[ir*2+1] = 0.0;
                 n_discard_a += 1;
+                if ( rho[ir*2]<rho_th && rho[ir*2] > max_discard_rhoa )
+                {
+                    max_discard_rhoa = rho[ir*2];
+                    ir_max_discard_rhoa = ir;
+                }
+                if ( sqrt(std::abs(sigma[ir*3]))<grho_th && sigma[ir*3] > max_discard_sigma_aa )
+                {
+                    max_discard_sigma_aa = sigma[ir*3];
+                    ir_max_discard_sigma_aa = ir;
+                }
+                if ( kin_r[ir*2]<tau_th && kin_r[ir*2] > max_discard_tau_a )
+                {
+                    max_discard_tau_a = kin_r[ir*2];
+                    ir_max_discard_tau_a = ir;
+                }
 }
-            if ( rho[ir*2+1]<rho_th || sqrt(std::abs(sigma[ir*3+2]))<grho_th || sigma[ir*3+2] < 0 || kin_r[ir*2+1]<tau_th) {
+            if ( rho[ir*2+1]<rho_th || sqrt(std::abs(sigma[ir*3+2]))<grho_th || sigma[ir*3+1] < 0.0|| kin_r[ir*2+1]<tau_th) {
+            //if ( rho[ir*2+1]<rho_th || sqrt(std::abs(sigma[ir*3+2]))<grho_th || std::abs(kin_r[ir*2+1])<tau_th) {
                 sgn[ir*2] = 0.0;
                 sgn[ir*2+1] = 0.0;
                 n_discard_b += 1;
+                if ( rho[ir*2+1]<rho_th && rho[ir*2+1] > max_discard_rhob )
+                {
+                    max_discard_rhob = rho[ir*2+1];
+                    ir_max_discard_rhob = ir;
+                }
+                if ( sqrt(std::abs(sigma[ir*3+2]))<grho_th && sigma[ir*3+2] > max_discard_sigma_bb )
+                {
+                    max_discard_sigma_bb = sigma[ir*3+2];
+                    ir_max_discard_sigma_bb = ir;
+                }
+                if ( kin_r[ir*2+1]<tau_th && kin_r[ir*2+1] > max_discard_tau_b )
+                {
+                    max_discard_tau_b = kin_r[ir*2+1];
+                    ir_max_discard_tau_b = ir;
+                }
 }
+            /// if rho[ir*2] < rho_th or rho[ir*2+1], set sgn[ir*2] and sgn[ir*2+1] to 0.0
+            //if ( rho[ir*2] < rho[ir*2+1])
+            //{
+            //    sgn[ir*2] = sgn[ir*2+1] = 0.0;
+            //}
         }
         std::cout << "number of negative alpha and beta density points:         "
                   << n_neg_dens_a << "/" << nrxx << " "
@@ -318,12 +376,79 @@ std::tuple<double,double,ModuleBase::matrix,ModuleBase::matrix> XC_Functional_Li
                   << n_discard_a << "/" << nrxx << " "
                   << n_discard_b << "/" << nrxx << std::endl; 
     }
+    int ifunc_index = 0;
 
     for ( xc_func_type &func : funcs )
     {
+        //std::cout << "processing functional " << ifunc_index << std::endl;
+        ifunc_index += 1;
         assert(func.info->family == XC_FAMILY_MGGA);
         xc_mgga_exc_vxc(&func, nrxx, rho.data(), sigma.data(), sigma.data(),
             kin_r.data(), exc.data(), vrho.data(), vsigma.data(), vlapl.data(), vtau.data());
+
+        // rho[ir*2], rho[ir*2+1], sigma[ir*3], sigma[ir*3+2], tau[ir*2], tau[ir*2+1], sgn[ir*2], sgn[ir*2+1],
+        // exc[ir], vrho[ir*2], vrho[ir*2+1], vsigma[ir*3], vsigma[ir*3+2], vtau[ir*2], vtau[ir*2+1]
+        // for ir_max_discard_rhoa, ir_max_discard_rhob, ir_max_discard_sigma_aa, ir_max_discard_sigma_bb, ir_max_discard_tau_a, ir_max_discard_tau_b
+        // using scientific notation, with n_digits digits after the decimal point, and total length of n_len
+        // n_digits = 2, n_len = 10
+        int n_digits = 2;
+        int n_len = 10;
+        std::cout << "rho, sigma, tau, sgn, exc, vrho, vsigma, vtau for the maximum discarded alpha and beta points for functional index: " << ifunc_index  << std::endl;
+        std::cout << std::scientific << std::setprecision(n_digits);
+        /// do a loop over ir for ir in {ir_max_discard_rhoa, ir_max_discard_rhob, ir_max_discard_sigma_aa, ir_max_discard_sigma_bb, ir_max_discard_tau_a, ir_max_discard_tau_b}
+        std::cout << std::setw(n_len) << "ir"
+                  << std::setw(n_len) << "rho_a"
+                  << std::setw(n_len) << "rho_b"
+                  << std::setw(n_len) << "sigma_aa"
+                  << std::setw(n_len) << "sigma_bb"
+                  << std::setw(n_len) << "tau_a"
+                  << std::setw(n_len) << "tau_b"
+                  << std::setw(n_len) << "sgn_a"
+                  << std::setw(n_len) << "sgn_b"
+                  << std::setw(n_len) << "exc"
+                  << std::setw(n_len) << "vrho_a"
+                  << std::setw(n_len) << "vrho_b"
+                  << std::setw(n_len) << "vsigma_aa"
+                  << std::setw(n_len) << "vsigma_bb"
+                  << std::setw(n_len) << "vtau_a"
+                  << std::setw(n_len) << "vtau_b" 
+                  << std::endl;
+        
+            std::list<int> ir_list = {
+                ir_max_discard_rhoa,
+                ir_max_discard_rhob,
+                ir_max_discard_sigma_aa,
+                ir_max_discard_sigma_bb,
+                ir_max_discard_tau_a,
+                ir_max_discard_tau_b
+            };
+
+        for (int ir : ir_list)
+        {
+            std::cout << std::setw(n_len) << ir
+                      << std::setw(n_len) << rho[ir*2]
+                      << std::setw(n_len) << rho[ir*2+1]
+                      << std::setw(n_len) << sigma[ir*3]
+                      << std::setw(n_len) << sigma[ir*3+2]
+                      << std::setw(n_len) << kin_r[ir*2]
+                      << std::setw(n_len) << kin_r[ir*2+1]
+                      << std::setw(n_len) << sgn[ir*2]
+                      << std::setw(n_len) << sgn[ir*2+1]
+                      << std::setw(n_len) << exc[ir]
+                      << std::setw(n_len) << vrho[ir*2]
+                      << std::setw(n_len) << vrho[ir*2+1]
+                      << std::setw(n_len) << vsigma[ir*3]
+                      << std::setw(n_len) << vsigma[ir*3+2]
+                      << std::setw(n_len) << vtau[ir*2]
+                      << std::setw(n_len) << vtau[ir*2+1] 
+                      << std::endl;
+        }
+
+
+        std::cout << std::endl;
+        std::cout << std::endl;
+        
+
 
         //process etxc
         for( int is=0; is!=nspin; ++is )
@@ -360,6 +485,7 @@ std::tuple<double,double,ModuleBase::matrix,ModuleBase::matrix> XC_Functional_Li
                 }
 #endif
                 const double v_tmp = ModuleBase::e2 * vrho[ir*nspin+is]  * sgn[ir*nspin+is];
+//                v(is,ir) += v_tmp * rho[ir*nspin+is]; // issue 1
                 v(is,ir) += v_tmp;
                 vtxc += v_tmp * chr->rho[is][ir];
             }
@@ -387,12 +513,6 @@ std::tuple<double,double,ModuleBase::matrix,ModuleBase::matrix> XC_Functional_Li
                 }
 #endif
                 h[0][ir] = 2.0 * gdr[0][ir] * vsigma[ir] * 2.0 * sgn[ir];
-
-
-//                sum_abs_gdr += sqrt(gdr[0][ir][0]*gdr[0][ir][0] 
-//                                  + gdr[0][ir][1]*gdr[0][ir][1]
-//                                  + gdr[0][ir][2]*gdr[0][ir][2]);
-//                sum_abs_vsigma += std::abs(vsigma[ir]*sgn[ir]);
                 if (std::abs(vsigma[ir]) > 1.0e3)
                 {
                     std::cout << rho[ir]    << " " << 
@@ -404,13 +524,7 @@ std::tuple<double,double,ModuleBase::matrix,ModuleBase::matrix> XC_Functional_Li
                                  vsigma[ir] << " " <<
                                  vtau[ir]   << " " << std::endl;
                 }
-//                sum_abs_h += sqrt(h[0][ir][0]*h[0][ir][0] 
-//                                + h[0][ir][1]*h[0][ir][1]
-//                                + h[0][ir][2]*h[0][ir][2]);
             }
-//            std::cout << "sum of abs(h)         after all grid points: " << sum_abs_h << std::endl;
-//            std::cout << "sum of abs(v_sig*sgn) after all grid points: " << sum_abs_vsigma << std::endl;
-//            std::cout << "sum of abs(gdr)       after all grid points: " << sum_abs_gdr << std::endl;
         }
         else
         {
@@ -441,6 +555,7 @@ std::tuple<double,double,ModuleBase::matrix,ModuleBase::matrix> XC_Functional_Li
             XC_Functional::grad_dot( h[is].data(),
                 dh[is].data(), chr->rhopw,
                 tpiba);
+            // compute dh[0] as 
         }
         double sum_abs_dh =0.0;
         if (nspin == 1) {
@@ -450,13 +565,13 @@ std::tuple<double,double,ModuleBase::matrix,ModuleBase::matrix> XC_Functional_Li
             std::cout << "sum of abs(dh) after all grid points: " << sum_abs_dh << std::endl;
         }
 
-
         double rvtxc = 0.0;
 #ifdef _OPENMP
 #pragma omp parallel for collapse(2) reduction(+:rvtxc) schedule(static, 256)
 #endif
         for( int is=0; is<nspin; ++is )
         {
+            //std::cout << "do I reach here 3? " << is << std::endl;
             for( int ir=0; ir< nrxx; ++ir )
             {
                 rvtxc += dh[is][ir] * rho[ir*nspin+is];
@@ -464,6 +579,142 @@ std::tuple<double,double,ModuleBase::matrix,ModuleBase::matrix> XC_Functional_Li
             }
         }
         vtxc -= rvtxc;
+        /// print dh for first 5 grid points
+        /// using scientific notation, with n_digits digits after the decimal point, and total length of n_len
+        /// n_digits = 2, n_len = 10
+        //int n_digits = 2;
+        //int n_len = 10;
+        std::cout << "h and dh for first 5 grid points in xc_functional_libxc:" << std::endl;
+        std::cout << std::scientific << std::setprecision(n_digits);
+        std::cout << std::setw(n_len) << "ir"
+                  << std::setw(n_len) << "h_a"
+                  << std::setw(n_len) << "h_b"   
+                  << std::setw(n_len) << "dh_a"
+                  << std::setw(n_len) << "dh_b" << std::endl;
+        for (int ir = 0; ir < std::min(n_grid_print, nrxx); ir++)
+        {
+            std::cout << std::setw(n_len) << ir
+                      << std::setw(n_len) << h[0][ir]
+                      << std::setw(n_len) << h[1][ir]
+                      << std::setw(n_len) << dh[0][ir]
+                      << std::setw(n_len) << dh[1][ir] << std::endl;
+        }
+        std::cout << std::endl;
+        std::cout << std::endl;
+        float mod_ha = 0.0;
+        float mod_hb = 0.0;
+        // loop over all ir < nrxx, calculate sqrt(h[0][ir].x^2 + h[0][ir].y^2 + h[0][ir].z^2).
+        // if it is greater than 1.0e4, print the values of rho, sigma, kin_r, sgn, exc, vrho, vsigma, vtau for ir.
+
+        // loop over all ir < nrxx, find the maximum absolute value for exc[ir], vrho[ir*2] as vrho_a, vrho[ir*2+1] as vrho_b,
+        // sigma[ir*3] as vsigma_aa, sigma[ir*3+2] as vsigma_bb,
+        // kin_r[ir*2] as vtau_a, kin_r[ir*2+1] as vtau_b,
+        // when the loop is done, print rho[ir*2], rho[ir*2+1], sigma[ir*3], sigma[ir*3+2],
+        // kin_r[ir*2], kin_r[ir*2+1], sgn[ir*2], sgn[ir*2+1],
+        // exc[ir], vrho[ir*2], vrho[ir*2+1], vsigma[ir*3], vsigma[ir*3+2],
+        // vtau[ir*2], vtau[ir*2+1] for the ir with each of the maximum values
+        int max_ir_exc = 0;
+        int max_ir_vrho_a = 0;
+        int max_ir_vrho_b = 0;
+        int max_ir_vsigma_aa = 0;
+        int max_ir_vsigma_bb = 0;
+        int max_ir_vtau_a = 0;
+        int max_ir_vtau_b = 0;
+        double max_exc = 0.0;
+        double max_vrho_a = 0.0;
+        double max_vrho_b = 0.0;
+        double max_vsigma_aa = 0.0;
+        double max_vsigma_bb = 0.0;
+        double max_vtau_a = 0.0;
+        double max_vtau_b = 0.0;
+
+        for (int ir = 0; ir < nrxx; ir++)
+        {
+            if (std::abs(exc[ir]) > max_exc && sgn[ir*nspin] > 0.0 && sgn[ir*nspin+1] > 0.0)
+            {
+                max_ir_exc = ir;
+                max_exc = std::abs(exc[ir]);
+            }
+            if (std::abs(vrho[ir*nspin]) > max_vrho_a && sgn[ir*nspin] > 0.0)
+            {
+                max_ir_vrho_a = ir;
+                max_vrho_a = std::abs(vrho[ir*nspin]);
+            }
+            if (std::abs(vrho[ir*nspin+1]) > max_vrho_b && sgn[ir*nspin+1] > 0.0)
+            {
+                max_ir_vrho_b = ir;
+                max_vrho_b = std::abs(vrho[ir*nspin+1]);
+            }
+            if (std::abs(vsigma[ir*3]) > max_vsigma_aa && sgn[ir*2] > 0.0)
+            {
+                max_ir_vsigma_aa = ir;
+                max_vsigma_aa = std::abs(vsigma[ir*3]);
+            }
+            if (std::abs(vsigma[ir*3+2]) > max_vsigma_bb && sgn[ir*2+1] > 0.0)
+            {
+                max_ir_vsigma_bb = ir;
+                max_vsigma_bb = std::abs(vsigma[ir*3+2]);
+            }
+            if (std::abs(vtau[ir*nspin]) > max_vtau_a && sgn[ir*nspin] > 0.0)
+            {
+                max_ir_vtau_a = ir;
+                max_vtau_a = std::abs(vtau[ir*nspin]);
+            }
+            if (std::abs(vtau[ir*nspin+1]) > max_vtau_b && sgn[ir*nspin+1] > 0.0)
+            {
+                max_ir_vtau_b = ir;
+                max_vtau_b = std::abs(vtau[ir*nspin+1]);
+            }
+        }
+
+        std::cout << "maximum absolute value of exc, vrho_a, vrho_b, vsigma_aa, vsigma_bb, vtau_a and vtau_b in xc_functional_libxc:" << std::endl;
+        std::cout << std::setw(n_len) << "ir"
+                  << std::setw(n_len) << "rho_a"
+                  << std::setw(n_len) << "rho_b"
+                  << std::setw(n_len) << "sigma_aa"
+                  << std::setw(n_len) << "sigma_bb"
+                  << std::setw(n_len) << "tau_a"
+                  << std::setw(n_len) << "tau_b"
+                  << std::setw(n_len) << "sgn_a"
+                  << std::setw(n_len) << "sgn_b"
+                  << std::setw(n_len) << "exc"
+                  << std::setw(n_len) << "vrho_a"
+                  << std::setw(n_len) << "vrho_b"
+                  << std::setw(n_len) << "vsigma_aa"
+                  << std::setw(n_len) << "vsigma_bb"
+                  << std::setw(n_len) << "vtau_a"
+                  << std::setw(n_len) << "vtau_b" << std::endl;
+        ir_list = {
+            max_ir_exc,
+            max_ir_vrho_a,
+            max_ir_vrho_b,
+            max_ir_vsigma_aa,
+            max_ir_vsigma_bb,
+            max_ir_vtau_a,
+            max_ir_vtau_b
+        };
+        for (int ir : ir_list)
+        {
+            std::cout << std::setw(n_len) << ir
+                      << std::setw(n_len) << rho[ir*2]
+                      << std::setw(n_len) << rho[ir*2+1]
+                      << std::setw(n_len) << sigma[ir*3]
+                      << std::setw(n_len) << sigma[ir*3+2]
+                      << std::setw(n_len) << kin_r[ir*2]
+                      << std::setw(n_len) << kin_r[ir*2+1]
+                      << std::setw(n_len) << sgn[ir*2]
+                      << std::setw(n_len) << sgn[ir*2+1]
+                      << std::setw(n_len) << exc[ir]
+                      << std::setw(n_len) << vrho[ir*2]
+                      << std::setw(n_len) << vrho[ir*2+1]
+                      << std::setw(n_len) << vsigma[ir*3]
+                      << std::setw(n_len) << vsigma[ir*3+2]
+                      << std::setw(n_len) << vtau[ir*2]
+                      << std::setw(n_len) << vtau[ir*2+1] << std::endl;
+        }
+        std::cout << std::endl;
+        std::cout << std::endl;
+        
 
         //process vtau
 #ifdef _OPENMP
@@ -497,7 +748,49 @@ std::tuple<double,double,ModuleBase::matrix,ModuleBase::matrix> XC_Functional_Li
 
     XC_Functional_Libxc::finish_func(funcs);
 
+    // print i_reach_2 and nrxx
+    //std::cout << "i_reach_3: " << i_reach_3 << " " << "nrxx: " << nrxx << std::endl;
+ 
     ModuleBase::timer::tick("XC_Functional_Libxc","v_xc_meta");
+    /// print v and vofk for ir < 5, and is = 1 and 2, and the sgn with a title as follows:
+    /// using scientific notation, with n_digits digits after the decimal point, and total length of n_len
+    /// n_digits = 1, n_len = 10
+    /// ir rho_a rho_b sig_aa sig_bb tau_a tau_b v_a   v_b   vofk_a   vofk_b   sgn_a  sgn_b
+    int n_digits = 2;
+    int n_len = 10;
+    //std::cout << "v and vofk for first 5 grid points in xc_functional_libxc:" << std::endl;
+    //std::cout << std::scientific << std::setprecision(n_digits);
+    //std::cout << std::setw(3) << "ir"
+    //          << std::setw(n_len) << "rho_a"
+    //          << std::setw(n_len) << "rho_b"
+    //          << std::setw(n_len) << "sigma_a"
+    //          << std::setw(n_len) << "sigma_b"
+    //          << std::setw(n_len) << "tau_a"
+    //          << std::setw(n_len) << "tau_b"
+    //          << std::setw(n_len) << "v_a"
+    //          << std::setw(n_len) << "v_b"
+    //          << std::setw(n_len) << "vofk_a"
+    //          << std::setw(n_len) << "vofk_b"
+    //          << std::setw(n_len) << "sgn_a"
+    //          << std::setw(n_len) << "sgn_b" << std::endl;
+    //for (int ir = 0; ir < std::min(n_grid_print, nrxx); ir++)
+    //{
+    //    std::cout << std::setw(3) << ir
+    //            << std::setw(n_len) << rho[ir*nspin]
+    //                << std::setw(n_len) << rho[ir*nspin+1]
+    //                << std::setw(n_len) << sigma[ir*nspin]
+    //                << std::setw(n_len) << sigma[ir*nspin+1]
+    //                << std::setw(n_len) << kin_r[ir*nspin]
+    //                << std::setw(n_len) << kin_r[ir*nspin+1]
+    //                << std::setw(n_len) << v(0,ir)
+    //                << std::setw(n_len) << v(1,ir)
+    //                << std::setw(n_len) << vofk(0,ir)
+    //                << std::setw(n_len) << vofk(1,ir)
+    //                << std::setw(n_len) << sgn[ir*nspin]
+    //                << std::setw(n_len) << sgn[ir*nspin+1] << std::endl;
+    //}
+    //std::cout << std::endl;
+    //std::cout << std::endl;
     return std::make_tuple( etxc, vtxc, std::move(v), std::move(vofk) );
 }
 

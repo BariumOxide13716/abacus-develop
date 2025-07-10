@@ -324,6 +324,23 @@ void ReadInput::item_elec_stru()
         this->add_item(item);
     }
     {
+        Input_Item item("dft_thresholds");
+        item.annotation = "thresholds for running DFT calculations";
+        // read three values: dft_thre_density, dft_thre_density_gradient, dft_thre_kin_ene_density
+        item.read_value = [](const Input_Item& item, Parameter& para) {
+            if (item.get_size() != 3)
+            {
+                ModuleBase::WARNING_QUIT("ReadInput", "dft_thresholds should have three values.");
+            }
+            para.input.dft_thre_density = std::stod(item.str_values[0]);
+            para.input.dft_thre_density_gradient = std::stod(item.str_values[1]);
+            para.input.dft_thre_kin_ene_density = std::stod(item.str_values[2]);
+        };
+
+        this->add_item(item);
+
+    }
+    {
         Input_Item item("pseudo_rcut");
         item.annotation = "default #exchange correlation functional";
         read_sync_double(input.pseudo_rcut);

@@ -8,6 +8,7 @@
 #include <array>
 #include <vector>
 #include <cassert>
+#include <limits>
 #include "module_base/formatter.h"
 #include "module_base/global_file.h"
 #include "module_base/global_function.h"
@@ -284,7 +285,7 @@ void ReadInput::read_txt_input(Parameter& param, const std::string& filename)
                                          "input parameters in file INPUT",
                                          1);
             }
-            ifs.ignore(150, '\n');
+            ifs.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         }
 
         ifs.rdstate();

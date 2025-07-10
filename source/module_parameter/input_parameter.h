@@ -114,6 +114,10 @@ struct Input_para
     int scf_nmax = 100;        ///< number of max elec iter
     double scf_thr = -1.0;     ///< \sum |rhog_out - rhog_in |^2
     double scf_ene_thr = -1.0; ///< energy threshold for scf convergence, in eV
+    // numerical quadrature thresholds in DFT calculations (currently only passed to meta-GGA calculations using libxc)
+    double dft_thre_density = 1.0e-8; //density threshold below which the grid point with the density will be discarded
+    double dft_thre_density_gradient = 1.0e-12; // density gradient threshold below which the grid point will be discarded
+    double dft_thre_kin_ene_density = 1.0e-8; //kinetic-energy-density threshold below which the grid point will be discarded
     int scf_thr_type = -1;     ///< type of the criterion of scf_thr, 1: reci drho, 2: real drho
     bool final_scf = false;    ///< whether to do final scf
     bool scf_os_stop = false;  ///< whether to stop scf when oscillation is detected

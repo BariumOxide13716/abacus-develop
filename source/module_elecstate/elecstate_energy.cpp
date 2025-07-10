@@ -223,6 +223,31 @@ double ElecState::cal_delta_escf() const
         }
     }
 
+    // print v_eff, v_fixed, v_ofk for first 5 grid points
+    /// using scientific notation, with n_digits digits after the decimal point, and total length of n_len
+    /// n_digits = 2, n_len = 10
+    int n_digits = 2;
+    int n_len = 10;
+    /// use the title as follows:
+    /// ir v_eff, v_fixed, v_ofk
+    std::cout << std::setw(3) << "ir"
+        /// print spaces with a length of 7*n_len
+                << std::setw(7*n_len) << ""
+                << std::setw(n_len) << "v_eff"
+                << std::setw(n_len) << "v_fixed"
+                << std::setw(n_len) << "v_ofk" << std::endl;
+    for (int ir = 0; ir < std::min(5, this->charge->rhopw->nrxx); ir++)
+    {
+        std::cout << std::setw(3) << ir
+                  << std::setw(7*n_len) << ""
+                  << std::scientific << std::setprecision(n_digits) << std::setw(n_len) << v_eff[ir]
+                  << std::scientific << std::setprecision(n_digits) << std::setw(n_len) << v_fixed[ir]
+                  << std::scientific << std::setprecision(n_digits) << std::setw(n_len) << (v_ofk ? v_ofk[ir] : 0.0)
+                  << std::endl;
+    }
+
+
+
 #ifdef __MPI
     Parallel_Reduce::reduce_pool(descf);
 #endif
